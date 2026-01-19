@@ -152,13 +152,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74469ceff28cfac4d8d3ad42049bb3e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_IsWalking: 0
   m_WalkSpeed: 5
   m_RunSpeed: 10
-  m_RunStepLenghten: 0.7
-  m_JumpSpeed: 10
-  m_StepInterval: 5
+  m_JumpHeight: 3
   m_GravityMultiplier: 2
+  m_Camera: {fileID: 963194227}
   m_MouseLook:
     XSensitivity: 2
     YSensitivity: 2
@@ -168,8 +166,10 @@ MonoBehaviour:
     smooth: 0
     smoothTime: 5
     lockCursor: 1
-  m_StickToGroundForce: 10
-  m_Jump: 0
+  m_GroundCheckDistance: 0.1
+  m_GroundLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!143 &52163390
 CharacterController:
   m_ObjectHideFlags: 0
