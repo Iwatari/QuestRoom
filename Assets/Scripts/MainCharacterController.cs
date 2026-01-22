@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.InputSystem; // Рекомендую использовать Input System
+using UnityEngine.InputSystem;
 
 namespace QuestRoom
 {
@@ -44,7 +44,12 @@ namespace QuestRoom
                 m_Camera = Camera.main;
 
             m_CameraTransform = m_Camera.transform;
-            m_MouseLook?.Init(transform, m_CameraTransform);
+
+            // Инициализируем MouseLook
+            if (m_MouseLook != null)
+            {
+                m_MouseLook.Init(transform, m_CameraTransform);
+            }
         }
 
         private void Update()

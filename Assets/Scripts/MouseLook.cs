@@ -20,20 +20,17 @@ namespace QuestRoom
         public bool smooth = true;
         public float smoothTime = 5f;
 
-        [Header("Cursor Control")]
-        public bool enableCursorControl = true;
+        [Header("Cursor Settings")]
         public CursorLockMode defaultLockMode = CursorLockMode.Locked;
-        public bool cursorVisible = false;
+        public bool defaultCursorVisible = false;
+        public bool enableInternalCursorControl = true;
 
         // Состояние
         private Quaternion m_CharacterTargetRot;
         private Quaternion m_CameraTargetRot;
         private bool m_IsActive = true;
-        private bool m_ExternalCursorControl = false;
-        private CursorLockMode m_ExternalLockMode;
-        private bool m_ExternalCursorVisible;
 
-        // События для управления извне
+        // События для внешнего управления
         public event Action<bool> OnActiveStateChanged;
         public event Action<CursorLockMode, bool> OnCursorStateChanged;
 
@@ -56,22 +53,19 @@ namespace QuestRoom
             m_CameraTargetRot = camera.localRotation;
 
             // Инициализация курсора
-            if (enableCursorControl && !m_ExternalCursorControl)
-            {
-                SetCursorState(defaultLockMode, cursorVisible);
-            }
+            SetCursorState(defaultLockMode, defaultCursorVisible);
         }
 
         public void LookRotation(Transform character, Transform camera)
         {
             if (!m_IsActive) return;
 
-            // Используем новый Input System
+            // Используем Input System
             Vector2 mouseDelta = Mouse.current.delta.ReadValue();
             float yRot = mouseDelta.x * XSensitivity * 0.1f;
             float xRot = mouseDelta.y * YSensitivity * 0.1f;
 
-            // Альтернатива: для совместимости со старым Input
+            // Альтернатива для совместимости со старым Input
             // float yRot = Input.GetAxis("Mouse X") * XSensitivity;
             // float xRot = Input.GetAxis("Mouse Y") * YSensitivity;
 
@@ -100,50 +94,29 @@ namespace QuestRoom
                 camera.localRotation = m_CameraTargetRot;
             }
 
-            // Внутреннее управление курсором (если не переопределено извне)
-            if (enableCursorControl && !m_ExternalCursorControl)
+            // Внутреннее управление курсором
+            if (enableInternalCursorControl)
             {
                 UpdateInternalCursorControl();
             }
         }
 
         /// <summary>
-        /// Позволяет другим системам взять управление курсором
+        /// Установить состояние курсора
         /// </summary>
-        public void SetExternalCursorControl(bool enable, CursorLockMode lockMode, bool visible)
-        {
-            m_ExternalCursorControl = enable;
-
-            if (enable)
-            {
-                // Сохраняем текущее состояние для восстановления
-                m_ExternalLockMode = Cursor.lockState;
-                m_ExternalCursorVisible = Cursor.visible;
-
-                // Устанавливаем новое состояние
-                Cursor.lockState = lockMode;
-                Cursor.visible = visible;
-
-                OnCursorStateChanged?.Invoke(lockMode, visible);
-            }
-            else
-            {
-                // Восстанавливаем внутреннее управление
-                if (enableCursorControl)
-                {
-                    SetCursorState(defaultLockMode, cursorVisible);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Установить состояние курсора (для внутреннего использования)
-        /// </summary>
-        private void SetCursorState(CursorLockMode lockMode, bool visible)
+        public void SetCursorState(CursorLockMode lockMode, bool visible)
         {
             Cursor.lockState = lockMode;
             Cursor.visible = visible;
             OnCursorStateChanged?.Invoke(lockMode, visible);
+        }
+
+        /// <summary>
+        /// Восстановить состояние курсора по умолчанию
+        /// </summary>
+        public void ResetCursorState()
+        {
+            SetCursorState(defaultLockMode, defaultCursorVisible);
         }
 
         /// <summary>
@@ -155,9 +128,10 @@ namespace QuestRoom
             {
                 SetCursorState(CursorLockMode.None, true);
             }
-            else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame &&
+                     Cursor.lockState == CursorLockMode.None)
             {
-                SetCursorState(defaultLockMode, cursorVisible);
+                ResetCursorState();
             }
         }
 
