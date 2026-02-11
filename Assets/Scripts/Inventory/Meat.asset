@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b417e9555bf212342aa588c8b3d4e68f, type: 3}
+  m_Name: Meat
+  m_EditorClassIdentifier: Assembly-CSharp::FoodItem
+  itemName: Meat
+  maxAmount: 20
+  itemPrefab: {fileID: 2569162603311050706, guid: 90ad0694c5da1ab468ce4c66d5b4ba76, type: 3}
+  icon: {fileID: 21300000, guid: ed1e5a4d3294f7743bc802ce2cf0ead4, type: 3}
+  itemType: 1
+  itemDescription: 
+  healAmount: 0

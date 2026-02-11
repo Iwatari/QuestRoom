@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.InputSystem; // Рекомендую использовать Input System
 
 namespace QuestRoom
 {
@@ -15,6 +15,7 @@ namespace QuestRoom
         [Header("Camera Settings")]
         [SerializeField] private Camera m_Camera;
         [SerializeField] private MouseLook m_MouseLook;
+        public MouseLook MouseLook => m_MouseLook;
 
         [Header("Ground Check")]
         [SerializeField] private float m_GroundCheckDistance = 0.1f;
@@ -44,12 +45,9 @@ namespace QuestRoom
                 m_Camera = Camera.main;
 
             m_CameraTransform = m_Camera.transform;
-
-            // Инициализируем MouseLook
-            if (m_MouseLook != null)
-            {
-                m_MouseLook.Init(transform, m_CameraTransform);
-            }
+            m_MouseLook?.Init(transform, m_CameraTransform);
+            m_MouseLook?.ForceLockCursor();
+            m_MouseLook?.SetCursorLock(true);
         }
 
         private void Update()
@@ -161,7 +159,10 @@ namespace QuestRoom
 
         private void RotateView()
         {
-            m_MouseLook?.LookRotation(transform, m_CameraTransform);
+            if (!InventoryManager.IsInventoryOpen) 
+            {
+                m_MouseLook?.LookRotation(transform, m_CameraTransform);
+            }
         }
 
 #if UNITY_EDITOR
