@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace QuestRoom
 {
-    public class Item : MonoBehaviour
+    public class Item : Entity
     {
         public ItemScriptableObject item;
         public int amount;

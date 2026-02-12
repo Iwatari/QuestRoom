@@ -7,13 +7,12 @@ namespace QuestRoom
 {
     public class InventoryManager : MonoBehaviour
     {
-        public static bool IsInventoryOpen { get; private set; }
+        public static bool IsOpened { get; private set; }
 
         public GameObject UIPanel;
         public GameObject crossHair;
         public Transform InventoryPanel;
         public List<InventorySlot> slots = new List<InventorySlot>();
-        public bool isOpened;
         public float reachDistance = 3f;
         private Camera mainCamera;
         private MouseLook mouseLook;
@@ -40,10 +39,9 @@ namespace QuestRoom
         {
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                isOpened = !isOpened;
-                IsInventoryOpen = isOpened;
+                IsOpened = !IsOpened;
 
-                if (isOpened == true)
+                if (IsOpened == true)
                 {
                     UIPanel.SetActive(true);
                     crossHair.SetActive(false);
@@ -57,7 +55,6 @@ namespace QuestRoom
                     if (mouseLook != null)
                     {
                         mouseLook.SetCursorLock(true);
-                        mouseLook.ForceLockCursor(); 
                     }
                 }
             }
@@ -81,7 +78,8 @@ namespace QuestRoom
         {
             foreach (InventorySlot slot in slots)
             {
-                if (slot.item == _item)
+                // Условие для заполнения инвентаря (разные предметы и не больше 64)
+                if (slot.item == _item && slot.amount < 64)
                 {
                     slot.amount += _amount;
                     slot.itemAmountText.text = slot.amount.ToString();

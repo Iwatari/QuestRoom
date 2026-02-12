@@ -3033,6 +3033,72 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1868218156}
   m_CullTransparentMesh: 1
+--- !u!1 &1884526868
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1884526870}
+  - component: {fileID: 1884526872}
+  - component: {fileID: 1884526871}
+  m_Layer: 0
+  m_Name: SphereArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1884526870
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884526868}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -27.4, y: 17.6, z: 2.51521}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1884526871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884526868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09d6d6743d2643045881888d211f5b39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntitySpawner
+  m_EntityPrefabs:
+  - {fileID: 6936630621831159980, guid: 91e922b83026b5b48bcca8fa9dde8f7a, type: 3}
+  - {fileID: 1809152913935907713, guid: 90ad0694c5da1ab468ce4c66d5b4ba76, type: 3}
+  - {fileID: 6936630621831159980, guid: 91e922b83026b5b48bcca8fa9dde8f7a, type: 3}
+  m_SphereArea: {fileID: 1884526872}
+  m_SpawnMode: 1
+  m_NumSpawns: 10
+  m_RespawnTime: 3
+--- !u!114 &1884526872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884526868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd3cdb6d860ed914b897eddc5f86ff82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuestRoom.SphereArea
+  m_Radius: 20
 --- !u!1001 &1904709363
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4027,3 +4093,4 @@ SceneRoots:
   - {fileID: 6262530503656420001}
   - {fileID: 1604485757}
   - {fileID: 208565098}
+  - {fileID: 1884526870}

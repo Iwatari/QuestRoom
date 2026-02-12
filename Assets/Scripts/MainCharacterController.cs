@@ -46,8 +46,6 @@ namespace QuestRoom
 
             m_CameraTransform = m_Camera.transform;
             m_MouseLook?.Init(transform, m_CameraTransform);
-            m_MouseLook?.ForceLockCursor();
-            m_MouseLook?.SetCursorLock(true);
         }
 
         private void Update()
@@ -72,10 +70,13 @@ namespace QuestRoom
 
         private void HandleMovement()
         {
-            UpdateGroundStatus();
-            ApplyGravity();
-            HandleJump();
-            ApplyMovement();
+            if (!InventoryManager.IsOpened)
+            {     
+                UpdateGroundStatus();
+                ApplyGravity();
+                HandleJump();
+                ApplyMovement();
+            }
         }
 
         private void UpdateGroundStatus()
@@ -159,7 +160,7 @@ namespace QuestRoom
 
         private void RotateView()
         {
-            if (!InventoryManager.IsInventoryOpen) 
+            if (!InventoryManager.IsOpened) 
             {
                 m_MouseLook?.LookRotation(transform, m_CameraTransform);
             }

@@ -17,7 +17,6 @@ namespace QuestRoom
 
         private Quaternion m_CharacterTargetRot;
         private Quaternion m_CameraTargetRot;
-        private bool m_CursorIsLocked = true;
 
         public void Init(Transform character, Transform camera)
         {
@@ -49,8 +48,8 @@ namespace QuestRoom
                 character.localRotation = m_CharacterTargetRot;
                 camera.localRotation = m_CameraTargetRot;
             }
-
-             UpdateCursorLock();
+            SetCursorLock(true);
+            UpdateCursorLock();
         }
         
         public void SetCursorLock(bool value)
@@ -62,44 +61,40 @@ namespace QuestRoom
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
+            UpdateCursorLock();
         }
         public void UpdateCursorLock()
         {
             //if the user set "lockCursor" we check & properly lock the cursos
             if (lockCursor)
+            {
                 InternalLockUpdate();
-
+            }
         }
 
         public void InternalLockUpdate()
         {
+            /*
             if (Input.GetKeyUp(KeyCode.Escape))
             {
-                m_CursorIsLocked = false;
+                lockCursor = false;
             }
-            else if (Input.GetMouseButtonUp(0))
+            */
+            if (Input.GetMouseButtonUp(0))
             {
-                m_CursorIsLocked = true;
+                lockCursor = true;
             }
 
-            if (m_CursorIsLocked)
+            if (lockCursor)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
-            else if (!m_CursorIsLocked)
+            else 
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-        }
-
-        public void ForceLockCursor()
-        {
-            m_CursorIsLocked = true;
-            lockCursor = true;
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
         
         Quaternion ClampRotationAroundXAxis(Quaternion q)
