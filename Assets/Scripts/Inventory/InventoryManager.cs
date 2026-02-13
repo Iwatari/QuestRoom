@@ -8,8 +8,7 @@ namespace QuestRoom
     public class InventoryManager : MonoBehaviour
     {
         public static bool IsOpened { get; private set; }
-
-        public GameObject UIPanel;
+        public GameObject UIBackGround;
         public GameObject crossHair;
         public Transform InventoryPanel;
         public List<InventorySlot> slots = new List<InventorySlot>();
@@ -33,7 +32,8 @@ namespace QuestRoom
             else
                 Debug.LogError("MainCharacterController not found! MouseLook unavailable.");
 
-            UIPanel.SetActive(false);
+            UIBackGround.SetActive(false);
+            InventoryPanel.gameObject.SetActive(false);
         }
         private void Update()
         {
@@ -43,14 +43,16 @@ namespace QuestRoom
 
                 if (IsOpened == true)
                 {
-                    UIPanel.SetActive(true);
+                    UIBackGround.SetActive(true);
+                    InventoryPanel.gameObject.SetActive(true);
                     crossHair.SetActive(false);
                       if (mouseLook != null)
                         mouseLook.SetCursorLock(false);
                 }
                 else
                 {
-                    UIPanel.SetActive(false);
+                    UIBackGround.SetActive(false);
+                    InventoryPanel.gameObject.SetActive(false);
                     crossHair.SetActive(true);
                     if (mouseLook != null)
                     {
@@ -78,8 +80,8 @@ namespace QuestRoom
         {
             foreach (InventorySlot slot in slots)
             {
-                // Условие для заполнения инвентаря (разные предметы и не больше 64)
-                if (slot.item == _item && slot.amount < 64)
+                // Условие для заполнения инвентаря (разные предметы и не больше maxAmount)
+                if (slot.item == _item && slot.amount < _item.maxAmount)
                 {
                     slot.amount += _amount;
                     slot.itemAmountText.text = slot.amount.ToString();

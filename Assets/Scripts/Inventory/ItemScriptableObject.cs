@@ -18,5 +18,6 @@ namespace QuestRoom
         public Sprite icon;
         public ItemType itemType;
         public string itemDescription;
+        public bool isConsumeable;
     }
 }

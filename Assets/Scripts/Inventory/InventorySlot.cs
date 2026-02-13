@@ -14,8 +14,10 @@ namespace QuestRoom
 
         private void Awake()
         {
-            iconGameObject = transform.GetChild(0).gameObject;
-            itemAmountText = transform.GetChild(1).GetComponent<TMP_Text>();
+          //iconGameObject = transform.GetChild(0).gameObject;
+            iconGameObject = transform.GetChild(0).GetChild(0).gameObject;
+          //itemAmountText = transform.GetChild(1).GetComponent<TMP_Text>();
+            itemAmountText = transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>();
         }
 
         public void SetIcon(Sprite icon)
