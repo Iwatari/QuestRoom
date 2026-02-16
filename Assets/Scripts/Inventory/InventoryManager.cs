@@ -8,6 +8,7 @@ namespace QuestRoom
     public class InventoryManager : MonoBehaviour
     {
         public static bool IsOpened { get; private set; }
+
         public GameObject UIBackGround;
         public GameObject crossHair;
         public Transform InventoryPanel;
@@ -15,6 +16,8 @@ namespace QuestRoom
         public float reachDistance = 3f;
         private Camera mainCamera;
         private MouseLook mouseLook;
+
+        public QuickslotInventory quickSlotInventory;
 
         private void Start()
         {
@@ -46,7 +49,7 @@ namespace QuestRoom
                     UIBackGround.SetActive(true);
                     InventoryPanel.gameObject.SetActive(true);
                     crossHair.SetActive(false);
-                      if (mouseLook != null)
+                    if (mouseLook != null)
                         mouseLook.SetCursorLock(false);
                 }
                 else
@@ -61,18 +64,35 @@ namespace QuestRoom
                 }
             }
 
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
             if (Input.GetKeyDown(KeyCode.E))
             {
-                if (Physics.Raycast(ray, out hit, reachDistance))
+                TryPickupItem();
+            }
+        }
+
+        private void TryPickupItem()
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, reachDistance))
+            {
+                Item itemComp = hit.collider.GetComponent<Item>();
+                if (itemComp != null)
                 {
-                    if (hit.collider.gameObject.GetComponent<Item>() != null)
+                    // Сначала пробуем добавить в быстрый доступ
+                    bool addedToQuick = false;
+                    if (quickSlotInventory != null)
                     {
-                        AddItem(hit.collider.gameObject.GetComponent<Item>().item, hit.collider.gameObject.GetComponent<Item>().amount);
-                        Destroy(hit.collider.gameObject);
+                        addedToQuick = quickSlotInventory.TryAddItem(itemComp.item, itemComp.amount);
                     }
+
+                    // Если не получилось — добавляем в основной инвентарь
+                    if (!addedToQuick)
+                    {
+                        AddItem(itemComp.item, itemComp.amount);
+                    }
+
+                    // Уничтожаем объект в любом случае
+                    Destroy(hit.collider.gameObject);
                 }
             }
         }
@@ -81,7 +101,9 @@ namespace QuestRoom
             foreach (InventorySlot slot in slots)
             {
                 // Условие для заполнения инвентаря (разные предметы и не больше maxAmount)
-                if (slot.item == _item && slot.amount < _item.maxAmount)
+                if (slot.item != null && 
+                    slot.item.itemID == _item.itemID && 
+                    slot.amount < _item.maxAmount)
                 {
                     slot.amount += _amount;
                     slot.itemAmountText.text = slot.amount.ToString();
@@ -97,9 +119,10 @@ namespace QuestRoom
                     slot.isEmpty = false;
                     slot.SetIcon(_item.icon);
                     slot.itemAmountText.text = _amount.ToString();
-                    break;
+                    return;
                 }
             }
+            Debug.Log("Инвентарь полон!");
         }
     }
 }

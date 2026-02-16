@@ -19,5 +19,11 @@ namespace QuestRoom
         public ItemType itemType;
         public string itemDescription;
         public bool isConsumeable;
+        public string itemID;
+        private void OnValidate()
+        {
+            if (string.IsNullOrEmpty(itemID))
+                itemID = name; 
+        }
     }
 }

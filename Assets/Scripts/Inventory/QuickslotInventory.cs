@@ -54,6 +54,42 @@ namespace QuestRoom
             HandleUseItem();
         }
 
+        public bool TryAddItem(ItemScriptableObject item, int amount)
+        {
+            if (item == null || amount <= 0) return false;
+
+            for (int i = 0; i < slotCount; i++)
+            {
+                if (slots[i].item != null &&
+                    slots[i].item.itemID == item.itemID &&
+                    slots[i].amount < item.maxAmount)
+                {
+                    int space = item.maxAmount - slots[i].amount;
+                    int add = Mathf.Min(space, amount);
+                    slots[i].amount += add;
+                    slots[i].itemAmountText.text = slots[i].amount.ToString();
+                    // Убедимся, что слот не помечен как пустой
+                    slots[i].isEmpty = false;
+                    amount -= add;
+                    if (amount <= 0) return true;
+                }
+            }
+
+            for (int i = 0; i < slotCount; i++)
+            {
+                if (slots[i].isEmpty)
+                {
+                    slots[i].item = item;
+                    slots[i].amount = amount;
+                    slots[i].isEmpty = false;
+                    slots[i].SetIcon(item.icon);
+                    slots[i].itemAmountText.text = amount.ToString();
+                    return true;
+                }
+            }
+
+            return false;
+        }
         /// <summary>Обработка колесика мыши</summary>
         private void HandleScrollWheel()
         {
@@ -121,7 +157,7 @@ namespace QuestRoom
                 if (drag != null)
                     drag.NullifySlotData();
                 else
-                    Debug.LogWarning("DragAndDropItem не найден в слоне");
+                    Debug.LogWarning("DragAndDropItem не найден в слоте");
             }
             else
             {
