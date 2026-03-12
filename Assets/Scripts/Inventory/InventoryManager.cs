@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using NUnit.Framework;
-using Unity.Cinemachine;
 using UnityEngine;
 
 namespace QuestRoom
@@ -38,19 +36,21 @@ namespace QuestRoom
             UIBackGround.SetActive(false);
             InventoryPanel.gameObject.SetActive(false);
         }
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Tab))
             {
                 IsOpened = !IsOpened;
 
-                if (IsOpened == true)
+                if (IsOpened)
                 {
                     UIBackGround.SetActive(true);
                     InventoryPanel.gameObject.SetActive(true);
                     crossHair.SetActive(false);
                     if (mouseLook != null)
                         mouseLook.SetCursorLock(false);
+                    HeldItemManager.Instance?.Show();
                 }
                 else
                 {
@@ -58,9 +58,8 @@ namespace QuestRoom
                     InventoryPanel.gameObject.SetActive(false);
                     crossHair.SetActive(true);
                     if (mouseLook != null)
-                    {
                         mouseLook.SetCursorLock(true);
-                    }
+                    HeldItemManager.Instance?.Hide();
                 }
             }
 
@@ -78,51 +77,68 @@ namespace QuestRoom
                 Item itemComp = hit.collider.GetComponent<Item>();
                 if (itemComp != null)
                 {
+                    bool pickedUp = false;
+
                     // Сначала пробуем добавить в быстрый доступ
-                    bool addedToQuick = false;
                     if (quickSlotInventory != null)
                     {
-                        addedToQuick = quickSlotInventory.TryAddItem(itemComp.item, itemComp.amount);
+                        pickedUp = quickSlotInventory.TryAddItem(itemComp.item, itemComp.amount);
                     }
 
-                    // Если не получилось — добавляем в основной инвентарь
-                    if (!addedToQuick)
+                    // Если не получилось — пробуем добавить в основной инвентарь
+                    if (!pickedUp)
                     {
-                        AddItem(itemComp.item, itemComp.amount);
+                        pickedUp = AddItem(itemComp.item, itemComp.amount);
                     }
 
-                    // Уничтожаем объект в любом случае
-                    Destroy(hit.collider.gameObject);
+                    // Уничтожаем объект только если успешно добавили
+                    if (pickedUp)
+                    {
+                        Destroy(hit.collider.gameObject);
+                    }
+                    // иначе предмет остаётся в мире
                 }
             }
         }
-        private void AddItem(ItemScriptableObject _item, int _amount)
+
+        // Возвращает true, если весь предмет успешно добавлен
+        private bool AddItem(ItemScriptableObject _item, int _amount)
         {
+            int remaining = _amount;
+
+            // Сначала пытаемся добавить в существующие стаки
             foreach (InventorySlot slot in slots)
             {
-                // Условие для заполнения инвентаря (разные предметы и не больше maxAmount)
-                if (slot.item != null && 
-                    slot.item.itemID == _item.itemID && 
+                if (slot.item != null &&
+                    slot.item.itemID == _item.itemID &&
                     slot.amount < _item.maxAmount)
                 {
-                    slot.amount += _amount;
+                    int space = _item.maxAmount - slot.amount;
+                    int add = Mathf.Min(space, remaining);
+                    slot.amount += add;
                     slot.itemAmountText.text = slot.amount.ToString();
-                    return;
+                    remaining -= add;
+                    if (remaining <= 0) return true;
                 }
             }
+
+            // Затем в пустые слоты
             foreach (InventorySlot slot in slots)
             {
-                if (slot.isEmpty == true)
+                if (slot.isEmpty)
                 {
                     slot.item = _item;
-                    slot.amount = _amount;
+                    slot.amount = remaining;
                     slot.isEmpty = false;
                     slot.SetIcon(_item.icon);
-                    slot.itemAmountText.text = _amount.ToString();
-                    return;
+                    slot.itemAmountText.text = remaining.ToString();
+                    return true; // весь остаток поместился в один пустой слот
                 }
             }
-            Debug.Log("Инвентарь полон!");
+
+            // Если дошли сюда — места нет
+            Debug.Log("Инвентарь полон! Предмет не подобран.");
+            return false;
         }
     }
 }

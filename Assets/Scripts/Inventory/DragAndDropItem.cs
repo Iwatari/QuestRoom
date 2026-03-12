@@ -10,8 +10,10 @@ namespace QuestRoom
     {
         public InventorySlot oldSlot;
         private Transform player;
-        private bool isRightButton = false;
-        private Coroutine holdCoroutine;
+
+        private bool isDragging = false;
+        private Coroutine holdTimer;
+        private bool isRightClickHolding = false;
 
         private void Start()
         {
@@ -21,7 +23,7 @@ namespace QuestRoom
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (oldSlot.isEmpty || eventData.button != PointerEventData.InputButton.Left)
+            if (!isDragging || oldSlot.isEmpty || eventData.button != PointerEventData.InputButton.Left)
                 return;
             GetComponent<RectTransform>().position += new Vector3(eventData.delta.x, eventData.delta.y);
         }
@@ -32,7 +34,17 @@ namespace QuestRoom
 
             if (eventData.button == PointerEventData.InputButton.Left)
             {
-                // Левая кнопка: начинаем перетаскивание
+                // Если в руке есть предмет – размещаем его в этом слоте
+                if (HeldItemManager.Instance != null && HeldItemManager.Instance.HasItem)
+                {
+                    // Принудительно останавливаем удержание ПКМ (если активно)
+                    StopRightClickHold();
+                    HeldItemManager.Instance.PlaceAllInSlot(oldSlot);
+                    return;
+                }
+
+                // Рука пуста – начинаем перетаскивание
+                isDragging = true;
                 GetComponentInChildren<Image>().color = new Color(1, 1, 1, 0.75f);
                 GetComponentInChildren<Image>().raycastTarget = false;
                 Canvas rootCanvas = GetComponentInParent<Canvas>().rootCanvas;
@@ -41,11 +53,13 @@ namespace QuestRoom
             }
             else if (eventData.button == PointerEventData.InputButton.Right)
             {
-                // Правая кнопка: начинаем удержание
-                isRightButton = true;
-                if (holdCoroutine != null)
-                    StopCoroutine(holdCoroutine);
-                holdCoroutine = StartCoroutine(HoldRightClick());
+                // Правая кнопка – сразу берём один предмет из текущего слота
+                HeldItemManager.Instance?.TakeOneFromSlot(oldSlot);
+
+                // Запускаем таймер для обнаружения удержания
+                if (holdTimer != null)
+                    StopCoroutine(holdTimer);
+                holdTimer = StartCoroutine(HoldTimer());
             }
         }
 
@@ -55,17 +69,20 @@ namespace QuestRoom
 
             if (eventData.button == PointerEventData.InputButton.Left)
             {
-                // Левая кнопка отпущена – завершаем перетаскивание
+                if (!isDragging) return; // если не перетаскивали – игнорируем
+
+                // Завершение перетаскивания
                 GetComponentInChildren<Image>().color = new Color(1, 1, 1, 1f);
                 GetComponentInChildren<Image>().raycastTarget = true;
                 transform.SetParent(oldSlot.transform);
                 transform.position = oldSlot.transform.position;
+                isDragging = false;
 
                 if (eventData.pointerCurrentRaycast.gameObject != null)
                 {
                     if (eventData.pointerCurrentRaycast.gameObject.tag == "Panel")
                     {
-                        // Выброс предмета
+                        // Выброс предмета из слота
                         GameObject itemObject = Instantiate(oldSlot.item.itemPrefab,
                             player.position + Vector3.up + player.forward, Quaternion.identity);
                         itemObject.GetComponent<Item>().amount = oldSlot.amount;
@@ -80,51 +97,50 @@ namespace QuestRoom
             }
             else if (eventData.button == PointerEventData.InputButton.Right)
             {
-                // Правая кнопка отпущена – останавливаем удержание
-                isRightButton = false;
-                if (holdCoroutine != null)
+                // Отпускаем правую кнопку – останавливаем удержание
+                StopRightClickHold();
+            }
+        }
+
+        private void StopRightClickHold()
+        {
+            isRightClickHolding = false;
+            if (holdTimer != null)
+            {
+                StopCoroutine(holdTimer);
+                holdTimer = null;
+            }
+        }
+
+        private IEnumerator HoldTimer()
+        {
+            yield return new WaitForSeconds(0.2f); // начальная задержка
+
+            // Если кнопка всё ещё зажата (проверка через Input)
+            if (Input.GetKey(KeyCode.Mouse1))
+            {
+                isRightClickHolding = true;
+
+                while (isRightClickHolding)
                 {
-                    StopCoroutine(holdCoroutine);
-                    holdCoroutine = null;
+                    // Дополнительная проверка: если кнопка не зажата, выходим
+                    if (!Input.GetKey(KeyCode.Mouse1))
+                        break;
+
+                    InventorySlot currentSlot = HeldItemManager.Instance?.GetSlotUnderMouse();
+                    if (currentSlot != null && !currentSlot.isEmpty)
+                    {
+                        bool success = HeldItemManager.Instance?.TakeOneFromSlot(currentSlot) ?? false;
+                        if (!success)
+                            break; // не удалось взять (рука полна, другой тип)
+                        if (currentSlot.isEmpty)
+                            break; // слот опустел – прекращаем, чтобы не брать из других автоматически
+                    }
+                    yield return new WaitForSeconds(0.15f); // интервал
                 }
             }
-        }
-
-        private IEnumerator HoldRightClick()
-        {
-            // Небольшая задержка перед первым действием (как в Minecraft)
-            yield return new WaitForSeconds(0.2f);
-
-            // Выполняем действие один раз
-            PerformRightClickAction();
-
-            // Затем с интервалом
-            float interval = 0.1f;
-            while (isRightButton)
-            {
-                yield return new WaitForSeconds(interval);
-                PerformRightClickAction();
-            }
-        }
-
-        private void PerformRightClickAction()
-        {
-            // Получаем слот под мышью
-            InventorySlot targetSlot = HeldItemManager.Instance?.GetSlotUnderMouse();
-            if (targetSlot == null) return;
-
-            HeldItemManager held = HeldItemManager.Instance;
-
-            if (!held.HasItem)
-            {
-                // Рука пуста – пытаемся взять один предмет из слота
-                held.TakeOneFromSlot(targetSlot);
-            }
-            else
-            {
-                // В руке есть предмет – пытаемся положить один в слот
-                held.PutOneToSlot(targetSlot);
-            }
+            // Сбрасываем флаг (на всякий случай)
+            isRightClickHolding = false;
         }
 
         public void NullifySlotData()
@@ -141,7 +157,6 @@ namespace QuestRoom
         {
             if (newSlot == oldSlot) return;
 
-            // Пустой слот – просто перемещаем
             if (newSlot.isEmpty)
             {
                 newSlot.item = oldSlot.item;
@@ -159,7 +174,6 @@ namespace QuestRoom
                 return;
             }
 
-            // Одинаковые предметы – стакаем
             if (oldSlot.item != null && newSlot.item != null && oldSlot.item.itemID == newSlot.item.itemID)
             {
                 int maxStack = oldSlot.item.maxAmount;

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Canned_food
   m_EditorClassIdentifier: Assembly-CSharp::FoodItem
   itemName: CannedFood
-  maxAmount: 3
+  maxAmount: 2
   itemPrefab: {fileID: 2886296962857552091, guid: a8d034a64156b6944991432f8a38c025, type: 3}
   icon: {fileID: 21300000, guid: 72f17b355ee42144fa03851556227227, type: 3}
   itemType: 1

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4530337029055393853}
   - component: {fileID: 5426539692754129532}
   - component: {fileID: 5421218259196567456}
+  - component: {fileID: 74229600867385416}
   m_Layer: 5
   m_Name: Slot
   m_TagString: Untagged
@@ -94,6 +95,18 @@ MonoBehaviour:
   isEmpty: 1
   iconGameObject: {fileID: 0}
   itemAmountText: {fileID: 0}
+--- !u!114 &74229600867385416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1097447648211766942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd700ffe6fd52d74a9f158ef7a33fc1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuestRoom.SlotClickHandler
 --- !u!1 &1883308382229686976
 GameObject:
   m_ObjectHideFlags: 0

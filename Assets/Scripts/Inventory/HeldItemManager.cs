@@ -33,18 +33,21 @@ namespace QuestRoom
 
         private void Update()
         {
-            if(heldItemObject.activeSelf)
+            if (heldItemObject.activeSelf)
             {
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     canvas.transform as RectTransform,
                     Input.mousePosition,
                     canvas.worldCamera,
-                    out Vector2 localpoint);
-                rectTransform.localPosition = localpoint;
+                    out Vector2 localPoint);
+                rectTransform.localPosition = localPoint;
             }
         }
 
         public bool HasItem => currentItem != null && currentAmount > 0;
+        public ItemScriptableObject CurrentItem => currentItem;
+        public int CurrentAmount => currentAmount;
+
         public void SetItem(ItemScriptableObject item, int amount)
         {
             if (item == null || amount <= 0)
@@ -81,21 +84,27 @@ namespace QuestRoom
             amountText.text = currentAmount.ToString();
         }
 
-        // Взять один предмет из слота
+        public void Show()
+        {
+            if (HasItem)
+                heldItemObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            heldItemObject.SetActive(false);
+        }
+
+        // Взять один предмет из слота (возвращает true, если успешно)
         public bool TakeOneFromSlot(InventorySlot slot)
         {
             if (slot == null || slot.isEmpty || slot.item == null) return false;
+            if (HasItem && currentItem.itemID != slot.item.itemID) return false;
+            if (HasItem && currentItem.itemID == slot.item.itemID && currentAmount >= currentItem.maxAmount) return false;
 
-            // Если в руке уже есть предмет, проверяем совместимость
-            if (HasItem)
-            {
-                if (currentItem.itemID != slot.item.itemID) return false; // разные предметы
-                if (currentAmount >= currentItem.maxAmount) return false; // рука полна
-            }
+            // Сохраняем предмет до изменения слота
+            ItemScriptableObject itemTaken = slot.item;
 
-            if (slot.amount < 1) return false;
-
-            // Уменьшаем слот
             slot.amount -= 1;
             if (slot.amount <= 0)
             {
@@ -110,7 +119,6 @@ namespace QuestRoom
                 slot.itemAmountText.text = slot.amount.ToString();
             }
 
-            // Добавляем в руку
             if (HasItem)
             {
                 currentAmount += 1;
@@ -118,58 +126,12 @@ namespace QuestRoom
             }
             else
             {
-                SetItem(slot.item, 1);
+                SetItem(itemTaken, 1); // используем сохранённый предмет
             }
             return true;
         }
 
-        // Положить один предмет в слот
-        public bool PutOneToSlot(InventorySlot slot)
-        {
-            if (!HasItem)
-            {
-                Debug.Log("PutOneToSlot: нет предмета в руке");
-                return false;
-            }
-            if (slot == null)
-            {
-                Debug.Log("PutOneToSlot: слот null");
-                return false;
-            }
-
-            if (slot.isEmpty)
-            {
-                Debug.Log("PutOneToSlot: слот пустой, кладём предмет");
-                slot.item = currentItem;
-                slot.amount = 1;
-                slot.isEmpty = false;
-                slot.SetIcon(currentItem.icon);
-                slot.itemAmountText.text = "1";
-                AddAmount(-1);
-                return true;
-            }
-            else
-            {
-                Debug.Log($"PutOneToSlot: слот не пустой, itemID слота={slot.item.itemID}, currentItemID={currentItem.itemID}, amount={slot.amount}, max={slot.item.maxAmount}");
-                if (slot.item.itemID != currentItem.itemID)
-                {
-                    Debug.Log("PutOneToSlot: разные предметы");
-                    return false;
-                }
-                if (slot.amount >= slot.item.maxAmount)
-                {
-                    Debug.Log("PutOneToSlot: слот полон");
-                    return false;
-                }
-                slot.amount += 1;
-                slot.itemAmountText.text = slot.amount.ToString();
-                AddAmount(-1);
-                Debug.Log("PutOneToSlot: успешно добавили");
-                return true;
-            }
-        }
-
-        // Получить слот под курсором (UI)
+        // Получить слот под курсором
         public InventorySlot GetSlotUnderMouse()
         {
             PointerEventData eventData = new PointerEventData(EventSystem.current);
@@ -184,6 +146,33 @@ namespace QuestRoom
                     return slot;
             }
             return null;
+        }
+        public void PlaceAllInSlot(InventorySlot targetSlot)
+        {
+            if (!HasItem || targetSlot == null) return;
+
+            if (targetSlot.isEmpty)
+            {
+                targetSlot.item = currentItem;
+                targetSlot.amount = currentAmount;
+                targetSlot.isEmpty = false;
+                targetSlot.SetIcon(currentItem.icon);
+                targetSlot.itemAmountText.text = currentAmount.ToString();
+                Clear();
+            }
+            else
+            {
+                if (targetSlot.item.itemID != currentItem.itemID) return;
+
+                int maxStack = targetSlot.item.maxAmount;
+                int space = maxStack - targetSlot.amount;
+                if (space <= 0) return;
+
+                int transfer = Mathf.Min(space, currentAmount);
+                targetSlot.amount += transfer;
+                targetSlot.itemAmountText.text = targetSlot.amount.ToString();
+                AddAmount(-transfer);
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Meat
   m_EditorClassIdentifier: Assembly-CSharp::FoodItem
   itemName: Meat
-  maxAmount: 3
+  maxAmount: 2
   itemPrefab: {fileID: 2569162603311050706, guid: 90ad0694c5da1ab468ce4c66d5b4ba76, type: 3}
   icon: {fileID: 21300000, guid: ed1e5a4d3294f7743bc802ce2cf0ead4, type: 3}
   itemType: 1
